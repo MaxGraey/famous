@@ -402,8 +402,14 @@ define(function(require, exports, module) {
 
     function _getAgentsEnergy() {
         var energy = 0;
-        for (var id in this._agentData)
-            energy += this.getAgentEnergy(id);
+        //for (var id in this._agentData)
+        //    energy += this.getAgentEnergy(id);
+        
+        var keys = Object.keys(this._agentData);
+        for (var i = 0, len = keys.length; i < len; i++) {
+            energy += this.getAgentEnergy(keys[i]);
+        }
+        
         return energy;
     }
 
@@ -494,9 +500,11 @@ define(function(require, exports, module) {
      */
     PhysicsEngine.prototype.sleep = function sleep() {
         if (this._isSleeping) return;
+        
         this.forEach(function(body) {
             body.sleep();
         });
+        
         this.emit(_events.end, this);
         this._isSleeping = true;
     };

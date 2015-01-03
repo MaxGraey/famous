@@ -86,8 +86,9 @@ define(function(require, exports, module) {
         var vDiff = this.vDiff;
         var impulse1 = this.impulse1;
         var impulse2 = this.impulse2;
+        var eventOutput = this._eventOutput;
 
-        for (var i = 0; i < targets.length; i++) {
+        for (var i = 0, len = targets.length; i < len; i++) {
             var target = targets[i];
 
             if (target === source) continue;
@@ -102,14 +103,12 @@ define(function(require, exports, module) {
 
             var dist    = pDiff.norm();
             var overlap = dist - (r1 + r2);
-            var effMass = 1/(w1 + w2);
-            var gamma   = 0;
+            //var effMass = 1 / (w1 + w2);
 
             if (overlap < 0) {
-
                 n.set(pDiff.normalize());
 
-                if (this._eventOutput) {
+                if (eventOutput) {
                     var collisionData = {
                         target  : target,
                         source  : source,
@@ -117,15 +116,27 @@ define(function(require, exports, module) {
                         normal  : n
                     };
 
-                    this._eventOutput.emit('preCollision', collisionData);
-                    this._eventOutput.emit('collision', collisionData);
+                    eventOutput.emit('preCollision', collisionData);
+                    eventOutput.emit('collision',    collisionData);
+                }
+                
+                // if spheres are moving apart, don't apply impulse (incident velocity component)
+                var posDotVel = n.dot(vDiff);
+                if (posDotVel > 0) {
+                    return;
                 }
 
-                var lambda = (overlap <= slop)
-                    ? ((1 + restitution) * n.dot(vDiff) + drift/dt * (overlap - slop)) / (gamma + dt/effMass)
-                    : ((1 + restitution) * n.dot(vDiff)) / (gamma + dt/effMass);
+                //var lambda = (overlap <= slop)
+                //    ? ((1 + restitution) * n.dot(vDiff) + drift / dt * (overlap - slop)) / (dt / effMass)
+                //    : ((1 + restitution) * n.dot(vDiff)) / (dt / effMass);
+                
+                var lambda = (1 + restitution) * posDotVel;
+                if (overlap < slop)
+                    lambda += drift / dt * (overlap - slop);
+                lambda /= (w1 + w2);
 
-                n.mult(dt*lambda).put(impulse1);
+                //n.mult(dt * lambda).put(impulse1);
+                n.mult(lambda).put(impulse1);
                 impulse1.mult(-1).put(impulse2);
 
                 source.applyImpulse(impulse1);
@@ -134,8 +145,7 @@ define(function(require, exports, module) {
                 //source.setPosition(p1.add(n.mult(overlap/2)));
                 //target.setPosition(p2.sub(n.mult(overlap/2)));
 
-                if (this._eventOutput) this._eventOutput.emit('postCollision', collisionData);
-
+                if (eventOutput) eventOutput.emit('postCollision', collisionData);
             }
         }
     };

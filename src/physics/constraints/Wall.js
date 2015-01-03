@@ -124,27 +124,32 @@ define(function(require, exports, module) {
 
         var drift = this.options.drift;
         var slop = -this.options.slop;
-        var gamma = 0;
+        var eventOptions = this._eventOutput;
 
-        if (this._eventOutput) {
+        if (eventOptions) {
             var data = {particle : particle, wall : this, overlap : overlap, normal : n};
-            this._eventOutput.emit('preCollision', data);
-            this._eventOutput.emit('collision', data);
+            eventOptions.emit('preCollision', data);
+            eventOptions.emit('collision', data);
         }
 
         switch (action) {
             case Wall.ON_CONTACT.REFLECT:
-                var lambda = (overlap < slop)
-                    ? -((1 + restitution) * n.dot(v) + drift / dt * (overlap - slop)) / (m * dt + gamma)
-                    : -((1 + restitution) * n.dot(v)) / (m * dt + gamma);
+                //var lambda = (overlap < slop)
+                //    ? -((1 + restitution) * n.dot(v) + drift / dt * (overlap - slop)) / (m * dt)
+                //    : -((1 + restitution) * n.dot(v)) / (m * dt);
+                
+                var lambda = (1 + restitution) * n.dot(v);
+                if (overlap < slop)
+                    lambda += drift / dt * (overlap - slop);
+                lambda /= m;
 
-                impulse.set(n.mult(dt * lambda));
+                impulse.set(n.mult(-lambda));
                 particle.applyImpulse(impulse);
                 particle.setPosition(p.add(n.mult(-overlap)));
                 break;
         }
 
-        if (this._eventOutput) this._eventOutput.emit('postCollision', data);
+        if (eventOptions) eventOptions.emit('postCollision', data);
     }
 
     function _onExit(particle, overlap, dt) {
