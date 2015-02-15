@@ -95,36 +95,37 @@ define(function(require, exports, module) {
 
             if (period === 0) {
                 gamma = 0;
-                beta = 1;
-            }
-            else {
+                beta  = 1;
+            } else {
                 var c = 4 * m * pi * dampingRatio / period;
                 var k = 4 * m * pi * pi / (period * period);
 
-                gamma = 1 / (c + dt*k);
-                beta  = dt*k / (c + dt*k);
+                gamma = 1 / (c + dt * k);
+                beta  = dt * k * gamma;
             }
 
             var x = p.x;
             var y = p.y;
             var z = p.z;
+            
+            var invEpsilon = 1 / epsilon;
 
             var f0  = f(x, y, z);
-            var dfx = (f(x + epsilon, p, p) - f0) / epsilon;
-            var dfy = (f(x, y + epsilon, p) - f0) / epsilon;
-            var dfz = (f(x, y, p + epsilon) - f0) / epsilon;
+            var dfx = (f(x + epsilon, y, z) - f0) * invEpsilon;
+            var dfy = (f(x, y + epsilon, z) - f0) * invEpsilon;
+            var dfz = (f(x, y, z + epsilon) - f0) * invEpsilon;
 
             var g0  = g(x, y, z);
-            var dgx = (g(x + epsilon, y, z) - g0) / epsilon;
-            var dgy = (g(x, y + epsilon, z) - g0) / epsilon;
-            var dgz = (g(x, y, z + epsilon) - g0) / epsilon;
+            var dgx = (g(x + epsilon, y, z) - g0) * invEpsilon;
+            var dgy = (g(x, y + epsilon, z) - g0) * invEpsilon;
+            var dgz = (g(x, y, z + epsilon) - g0) * invEpsilon;
 
             J.setXYZ(dfx + dgx, dfy + dgy, dfz + dgz);
 
-            var antiDrift = beta/dt * (f0 + g0);
-            var lambda = -(J.dot(v) + antiDrift) / (gamma + dt * J.normSquared() / m);
+            var antiDrift = beta / dt * (f0 + g0);
+            var lambda    = -(J.dot(v) + antiDrift) / (gamma + dt * J.normSquared() / m);
 
-            impulse.set(J.mult(dt*lambda));
+            impulse.set(J.mult(dt * lambda));
             body.applyImpulse(impulse);
         }
     };
