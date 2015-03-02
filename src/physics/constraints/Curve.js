@@ -111,15 +111,10 @@ define(function(require, exports, module) {
             var invEpsilon = 1 / epsilon;
 
             var f0  = f(x, y, z);
-<<<<<<< HEAD
+
             var dfx = (f(x + epsilon, y, z) - f0) * invEpsilon;
             var dfy = (f(x, y + epsilon, z) - f0) * invEpsilon;
             var dfz = (f(x, y, z + epsilon) - f0) * invEpsilon;
-=======
-            var dfx = (f(x + epsilon, y, z) - f0) / epsilon;
-            var dfy = (f(x, y + epsilon, z) - f0) / epsilon;
-            var dfz = (f(x, y, z + epsilon) - f0) / epsilon;
->>>>>>> origin/master
 
             var g0  = g(x, y, z);
             var dgx = (g(x + epsilon, y, z) - g0) * invEpsilon;
