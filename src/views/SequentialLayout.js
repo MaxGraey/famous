@@ -4,7 +4,7 @@
  *
  * Owner: felix@famo.us
  * @license MPL 2.0
- * @copyright Famous Industries, Inc. 2014
+ * @copyright Famous Industries, Inc. 2015
  */
 
 define(function(require, exports, module) {
@@ -159,6 +159,10 @@ define(function(require, exports, module) {
         return {
             transform: parentSpec.transform,
             origin: parentSpec.origin,
+<<<<<<< HEAD
+=======
+            opacity: parentSpec.opacity,
+>>>>>>> origin/master
             size: this.getSize(),
             target: result
         };
